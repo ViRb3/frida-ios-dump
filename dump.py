@@ -40,11 +40,9 @@ file_dict = {}
 finished = threading.Event()
 
 
-def get_usb_iphone():
-    Type = 'usb'
-    if int(frida.__version__.split('.')[0]) < 12:
-        Type = 'tether'
+def get_iphone():
     device_manager = frida.get_device_manager()
+    device_manager.add_remote_device(Host)
     changed = threading.Event()
 
     def on_changed():
@@ -54,12 +52,19 @@ def get_usb_iphone():
 
     device = None
     while device is None:
-        devices = [dev for dev in device_manager.enumerate_devices() if dev.type == Type]
-        if len(devices) == 0:
-            print('Waiting for USB device...')
+        devices = device_manager.enumerate_devices()
+        if len(devices) < 1:
+            print('Waiting for device...')
             changed.wait()
         else:
-            device = devices[0]
+            print('Choose your device:')
+            for i, d in enumerate(devices):
+                print('{}) name={} type={}'.format(i, d.name, d.type))
+            print('x) Rescan devices')
+            choice = input()
+            if choice.isdigit():
+                device = devices[int(choice)]
+                
 
     device_manager.off('changed', on_changed)
 
@@ -293,25 +298,25 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(exit_code)
 
-    device = get_usb_iphone()
+    # update ssh args
+    if args.ssh_host:
+        Host = args.ssh_host
+    if args.ssh_port:
+        Port = int(args.ssh_port)
+    if args.ssh_user:
+        User = args.ssh_user
+    if args.ssh_password:
+        Password = args.ssh_password
+    if args.ssh_key_filename:
+        KeyFileName = args.ssh_key_filename
+
+    device = get_iphone()
 
     if args.list_applications:
         list_applications(device)
     else:
         name_or_bundleid = args.target
         output_ipa = args.output_ipa
-        # update ssh args
-        if args.ssh_host:
-            Host = args.ssh_host
-        if args.ssh_port:
-            Port = int(args.ssh_port)
-        if args.ssh_user:
-            User = args.ssh_user
-        if args.ssh_password:
-            Password = args.ssh_password
-        if args.ssh_key_filename:
-            KeyFileName = args.ssh_key_filename
-
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
