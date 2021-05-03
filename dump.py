@@ -247,7 +247,7 @@ def open_target_app(device, name_or_bundleid):
     display_name = ''
     bundle_identifier = ''
     for application in get_applications(device):
-        if name_or_bundleid == application.identifier or name_or_bundleid == application.name:
+        if name_or_bundleid.lower() in [application.identifier.lower(), application.name.lower()]:
             pid = application.pid
             display_name = application.name
             bundle_identifier = application.identifier
