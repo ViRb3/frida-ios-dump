@@ -1,15 +1,28 @@
 # frida-ios-dump
-Pull a decrypted IPA from a jailbroken device
 
+Pull a decrypted IPA from a jailbroken device.
+Tested on iPhone 6S with iOS 14.4 and Taurine 1.0.4 (libhooker).
 
 ## Usage
 
- 1. Install [frida](http://www.frida.re/) on device
- 2. `sudo pip install -r requirements.txt --upgrade`
- 3. Run usbmuxd/iproxy SSH forwarding over USB (Default 2222 -> 22). e.g. `iproxy 2222 22`
- 4. Run ./dump.py `Display name` or `Bundle identifier`
+1. Install [Frida](https://frida.re/docs/ios/) and [openssh-server](https://cydia.saurik.com/package/openssh/) on your device
+2. Clone this repository, and inside its directory, run:
+   ```bash
+   pip install -r requirements.txt --upgrade
+   ```
+3. Example commands:
+   ```bash
+   ./dump.py --host 192.168.1.101 --port 22 com.test.app # uses bundle identifier
+   ./dump.py --host 192.168.1.101 --port 22 "FaceTime" # uses display name
+   ./dump.py --host 192.168.1.101 --port 22 --list # lists installed apps
+   ./dump.py Aftenposten # uses local SSH tunnel (port 2222) and Frida over USB
+   ```
 
-For SSH/SCP make sure you have your public key added to the target device's ~/.ssh/authorized_keys file.
+You can use [OpenSSH Settings](http://cydia.saurik.com/package/u.blanxd.opensshport/) to easily control your SSH server through a graphical interface.
+
+You can also use [usbmuxd](https://github.com/libimobiledevice/usbmuxd) or [iproxy](https://iphonedev.wiki/index.php/SSH_Over_USB) to forward local SSH over a USB tunnel for increased security.
+
+Example workflow:
 
 ```
 ./dump.py Aftenposten
@@ -36,23 +49,14 @@ Generating Aftenposten.ipa
 Done.
 ```
 
-Congratulations!!! You've got a decrypted IPA file.
+Congratulations! You've got a decrypted IPA file.
 
-Drag to [MonkeyDev](https://github.com/AloneMonkey/MonkeyDev), Happy hacking!
+### Troubleshooting
 
-## Support
+If any of the following errors occur:
 
-Python 2.x and 3.x
+- Device reboots
+- Lost connection
+- Unexpected error while probing dyld of target process
 
-
-### issues
-
-If the following error occurs:
-
-* causes device to reboot
-* lost connection
-* unexpected error while probing dyld of target process
-
-please open the application before dumping.
-
-
+Please open the application manually and keep it in the foreground before dumping.
