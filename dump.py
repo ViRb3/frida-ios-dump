@@ -24,11 +24,6 @@ from tqdm import tqdm
 import traceback
 import tempfile
 
-IS_PY2 = sys.version_info[0] < 3
-if IS_PY2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 DUMP_JS = os.path.join(script_dir, 'dump.js')
@@ -99,10 +94,7 @@ def on_message(message, data):
 
     def progress(filename, size, sent):
         baseName = os.path.basename(filename)
-        if IS_PY2 or isinstance(baseName, bytes):
-            t.desc = baseName.decode("utf-8")
-        else:
-            t.desc = baseName
+        t.desc = baseName
         t.total = size
         t.update(sent - last_sent[0])
         last_sent[0] = 0 if size == sent else sent
